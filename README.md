@@ -1,41 +1,70 @@
-# Hydro Rainfall
+# 🌧️ Hydro Rainfall — Rainfall Runoff Calculator
 
-降雨数据处理工具 -- 概湖灌溉需水计算程序。
+[![GitHub stars](https://img.shields.io/github/stars/zengtianli/hydro-rainfall)](https://github.com/zengtianli/hydro-rainfall)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.36+-FF4B4B.svg)](https://streamlit.io)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-hydro--rainfall.tianlizeng.cloud-brightgreen)](https://hydro-rainfall.tianlizeng.cloud)
 
-处理流程：分区处理 -> 面积计算 -> 降雨系数(ggxs) -> 取水处理 -> 扣减计算 -> 合并输出。
+Rainfall runoff calculator for lake irrigation demand — 6-step pipeline from partition processing to final output.
 
-## Usage
+![screenshot](docs/screenshot.png)
+
+## Features
+
+- **6-step pipeline** — partition → area → rainfall coefficient → intake → deduction → merge
+- **228 lakes across 15 partitions** — complete coverage of the study area
+- **Hourly resolution** — convert daily data to hourly time series
+- **Web + CLI** — Streamlit interface for interactive use, CLI for batch processing
+- **Built-in sample data** — try it instantly with included example files
+
+## Quick Start
 
 ```bash
+git clone https://github.com/zengtianli/hydro-rainfall.git
+cd hydro-rainfall
 pip install -r requirements.txt
-
-# 运行所有步骤
-python comb0609.py
-
-# 指定基础目录
-python comb0609.py /path/to/data
-
-# 运行指定步骤
-python comb0609.py --steps partition area ggxs
+streamlit run app.py
 ```
 
-## 输入文件
+## CLI Usage
 
-| 文件 | 说明 |
-|------|------|
-| `static_PYLYSCS.txt` | 分区静态数据（概湖名称、面积） |
-| `input_FQNNGXL.txt` | 分区年内各旬降雨系数 |
-| `input_GHJYL.txt` | 概湖径流量数据 |
-| `input_YSH_GH.txt` | 取水户与概湖对应关系 |
-| `input_YSH.txt` | 取水户取水量数据 |
+```bash
+# Run all steps
+python comb0609.py
 
-## 输出
+# Run specific steps
+python comb0609.py --steps partition area ggxs merge_final
+```
 
-处理结果保存在 `data/` 目录下：
+## Input Files
 
-- `data/01csv/` -- 分区 CSV
-- `data/02area/` -- 面积汇总
-- `data/03ggxs/` -- 降雨系数
-- `data/04deduct/` -- 扣减结果
-- `data/final.csv` -- 最终合并结果
-- `output_GHJYL.txt` -- 最终输出（TSV 格式）
+| File | Format | Description |
+|------|--------|-------------|
+| `static_PYLYSCS.txt` | Key-value | Partition and lake static configuration |
+| `input_FQNNGXL.txt` | TSV | Daily rainfall coefficients (15 partitions) |
+| `input_GHJYL.txt` | TSV | River runoff data (17 channels) |
+| `input_YSH_GH.txt` | TSV | Water user to lake mapping |
+| `input_YSH.txt` | TSV | Water intake volume per company |
+
+## Output
+
+- `data/final.csv` — hourly results for all 228 lakes
+- `output_GHJYL.txt` — final output in TSV format
+
+## Deploy (VPS)
+
+```bash
+git clone https://github.com/zengtianli/hydro-rainfall.git
+cd hydro-rainfall
+pip install -r requirements.txt
+nohup streamlit run app.py --server.port 8518 --server.headless true &
+```
+
+## Hydro Toolkit Plugin
+
+This project is a plugin for [Hydro Toolkit](https://github.com/zengtianli/hydro-toolkit) and can also run standalone. Install it in the Toolkit by pasting this repo URL in the Plugin Manager. You can also **[try it online](https://hydro-rainfall.tianlizeng.cloud)** — no install needed.
+
+## License
+
+MIT

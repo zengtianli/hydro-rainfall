@@ -1,0 +1,6 @@
+name: rainfall
+title: 降雨径流计算
+icon: "🌧️"
+order: 70
+description: 概湖灌溉需水量计算（分区→面积→降雨系数→取水→扣减→合并）
+version: 1.0.0

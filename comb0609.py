@@ -11,8 +11,9 @@ class Config:
         self.DATA_DIR = self.BASE_DIR / 'data'
         self.dirs = {
             'csv': self.DATA_DIR / '01csv',
-            'area': self.DATA_DIR / '02area', 
+            'area': self.DATA_DIR / '02area',
             'ggxs': self.DATA_DIR / '03ggxs',
+            'intake': self.DATA_DIR / '03intake',
             'deduct': self.DATA_DIR / '04deduct'
         }
         for d in self.dirs.values():
