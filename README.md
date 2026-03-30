@@ -18,7 +18,7 @@
 
 ---
 
-![hydro-rainfall demo](docs/screenshots/demo.svg)
+![hydro-rainfall demo](docs/screenshots/demo.png)
 
         ---
 
