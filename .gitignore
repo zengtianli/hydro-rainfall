@@ -3,3 +3,23 @@ __pycache__/
 .DS_Store
 venv/
 .venv/
+
+
+# Python
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Cache
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
