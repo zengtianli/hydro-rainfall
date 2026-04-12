@@ -11,7 +11,7 @@
 | 静态湖泊数据 | `static_PYLYSCS.txt` |
 | 分区参数文件 | `input_YSH.txt`、`input_YSH_GH.txt`、`input_FQNNGXL.txt`、`input_GHJYL.txt` |
 | 数据流水线目录 | `data/01csv → 02area → 03ggxs → 04deduct → final/merge` |
-| Python | `/Users/tianli/miniforge3/bin/python3` |
+| Python | `/opt/homebrew/bin/python3`（项目内用 `uv run`） |
 
 ## 常用命令
 
