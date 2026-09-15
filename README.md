@@ -1,16 +1,16 @@
 # hydro-rainfall
 
-**English** | [中文](README_CN.md)
+**中文** | [English](README_EN.md)
 
-Rainfall-runoff calculator for lake irrigation demand — processes 228 lakes across 15 partitions.
+湖泊灌区降雨径流计算工具——覆盖 15 个分区、228 个湖泊的径流推算。
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-hydro--rainfall.tianlizeng.cloud-blue?style=for-the-badge)](https://hydro-rainfall.tianlizeng.cloud)
+[![在线演示](https://img.shields.io/badge/在线演示-hydro--rainfall.tianlizeng.cloud-blue?style=for-the-badge)](https://hydro-rainfall.tianlizeng.cloud)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9+-yellow?style=for-the-badge)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ---
 
-### Try it now — no install needed
+### 无需安装，立即体验
 
 **https://hydro-rainfall.tianlizeng.cloud**
 
@@ -20,42 +20,42 @@ Rainfall-runoff calculator for lake irrigation demand — processes 228 lakes ac
 
 ---
 
-## What can hydro-rainfall do?
+## 功能一览
 
-| Feature | Description |
-|---------|-------------|
-| **6-step pipeline** | partition → area → rainfall coefficient → intake → deduction → merge |
-| **228 lakes / 15 partitions** | Pre-loaded spatial dataset, no manual upload needed |
-| **Daily → hourly conversion** | Converts daily precipitation data into hourly time series |
-| **Batch processing** | Upload multi-file ZIP for bulk computation |
-| **Excel export** | Download results per lake with full breakdowns |
+| 功能 | 说明 |
+|------|------|
+| **6 步处理流程** | 分区 → 面积 → 径流系数 → 引水量 → 扣损 → 合并 |
+| **228 个湖泊 / 15 个分区** | 内置空间数据集，无需手动上传 |
+| **日→时转换** | 将日降水数据转换为逐小时时序 |
+| **批量处理** | 上传 ZIP 压缩包批量计算 |
+| **Excel 导出** | 按湖泊下载含完整明细的计算结果 |
 
-## Install
-
-```bash
-git clone https://github.com/zengtianli/hydro-rainfall.git
-cd hydro-rainfall
-pip install -r requirements.txt
-```
-
-## Quick Start
-
-```bash
-streamlit run app.py
-```
-
-## Self-host
+## 安装
 
 ```bash
 git clone https://github.com/zengtianli/hydro-rainfall.git
 cd hydro-rainfall
 pip install -r requirements.txt
+```
+
+## 快速开始
+
+```bash
 streamlit run app.py
 ```
 
-Or use the hosted version: **https://hydro-rainfall.tianlizeng.cloud**
+## 自托管
 
-## Requirements
+```bash
+git clone https://github.com/zengtianli/hydro-rainfall.git
+cd hydro-rainfall
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+或直接使用托管版本：**https://hydro-rainfall.tianlizeng.cloud**
+
+## 环境要求
 
 - Python 3.9+
 - Streamlit 1.36+
