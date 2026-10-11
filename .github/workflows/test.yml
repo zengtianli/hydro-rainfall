@@ -1,0 +1,28 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    env:
+      # Overrides .python-version so each job really runs on its matrix version.
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked dependencies
+        run: uv sync --frozen
+      - name: Show versions
+        run: uv run --frozen python -c "import sys, pandas, numpy; print(sys.version); print('pandas', pandas.__version__, 'numpy', numpy.__version__)"
+      - name: Run tests
+        run: uv run --frozen python -m unittest discover -s tests -v

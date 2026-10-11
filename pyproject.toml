@@ -2,10 +2,14 @@
 name = "hydro-rainfall"
 version = "0.1.0"
 description = "Add your description here"
-requires-python = ">=3.12"
+# Lowest supported Python. tests/test_python_support.py checks that the READMEs and
+# the CI matrix agree with this line, and CI runs the pipeline on every listed version.
+requires-python = ">=3.10"
 dependencies = [
     "openpyxl>=3.1.5",
-    "pandas>=3.0.2",
+    # pandas 3.x needs Python 3.11+, so Python 3.10 installs pandas 2.x.
+    # The bundled sample gives the same result files on both; the test checks that.
+    "pandas>=2.2",
     "fastapi>=0.115.0",
     "uvicorn>=0.32.0",
     "python-multipart>=0.0.26",

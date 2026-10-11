@@ -5,7 +5,7 @@
 Rainfall-runoff calculator for lake irrigation demand — processes 228 lakes across 15 partitions.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-hydro--rainfall.tianlizeng.cloud-blue?style=for-the-badge)](https://hydro-rainfall.tianlizeng.cloud)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-yellow?style=for-the-badge)](https://python.org)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-yellow?style=for-the-badge)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ---
@@ -38,11 +38,15 @@ cd hydro-rainfall
 pip install -r requirements.txt
 ```
 
+With [uv](https://docs.astral.sh/uv/), run `uv sync` instead. It follows `.python-version` (3.13) by default; add `--python 3.10` to use the 3.10 / 3.11 you already have.
+
 ## Quick Start
 
 ```bash
-streamlit run app.py
+python comb0609.py
 ```
+
+Reads `static_PYLYSCS.txt` and `input_*.txt` from the current directory, runs the six steps, and writes `data/final.csv` and `output_GHJYL.txt`. If the input files live elsewhere, pass that directory: `python comb0609.py /path/to/dir`.
 
 ## Self-host
 
@@ -50,15 +54,15 @@ streamlit run app.py
 git clone https://github.com/zengtianli/hydro-rainfall.git
 cd hydro-rainfall
 pip install -r requirements.txt
-streamlit run app.py
+python comb0609.py
 ```
 
 Or use the hosted version: **https://hydro-rainfall.tianlizeng.cloud**
 
 ## Requirements
 
-- Python 3.9+
-- Streamlit 1.36+
+- Python 3.10 or newer (every commit is tested on 3.10, 3.11, 3.12 and 3.13)
+- pandas 2.2 or newer
 
 ## License
 
