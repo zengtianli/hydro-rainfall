@@ -28,3 +28,8 @@ build/
 *$py.class
 Thumbs.db
 *.swp
+
+# Written by a run next to the inputs; the tracked example results are the other data/ folders
+output_GHJYL.txt
+data/03intake/
+data/logs/

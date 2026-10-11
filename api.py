@@ -1,10 +1,7 @@
-"""FastAPI wrapper for hydro-rainfall — unchanged Python core, no Streamlit.
+"""HTTP API around the same pipeline as comb0609.py.
 
 Run:
-    uv run uvicorn api:app --host 127.0.0.1 --port 8618 --reload
-
-Requires python-multipart for file upload:
-    uv add python-multipart
+    uvicorn api:app --host 127.0.0.1 --port 8618
 """
 from __future__ import annotations
 
@@ -20,33 +17,21 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
-# --- shared helpers (see ~/Dev/devtools/lib/hydro_api_helpers.py) ---
-for _p in [Path.home() / "Dev/devtools/lib", Path("/var/www/devtools/lib")]:
-    if _p.exists():
-        sys.path.insert(0, str(_p))
-        break
-from hydro_api_helpers import (  # noqa: E402
-    build_json_response,
-    cors_origins,
-    df_to_json_safe,
-    preview_zip_files,
-)
-
 import pandas as pd  # noqa: E402
 
-# Project root on sys.path so `from comb0609 import Config, Processor` resolves
-# exactly like the original Streamlit entrypoint does.
+# Project root on sys.path so the sibling modules resolve from any working directory.
 PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from api_helpers import build_json_response, cors_origins, df_to_json_safe, preview_zip_files  # noqa: E402
 from comb0609 import Config, Processor  # noqa: E402
 
 app = FastAPI(title="hydro-rainfall-api", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins("hydro-rainfall", 3118),
+    allow_origins=cors_origins(3118),
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
@@ -206,7 +191,7 @@ def _run_rainfall(zip_bytes: bytes) -> tuple[bytes, int, bool]:
 def _run_rainfall_full(zip_bytes: bytes) -> dict:
     """JSON-response path: preview + per-step outputs + result tables + zip base64."""
     started = time.perf_counter()
-    zip_preview = preview_zip_files(zip_bytes, group_by_prefix=True)
+    zip_preview = preview_zip_files(zip_bytes)
 
     with tempfile.TemporaryDirectory() as tmpdir_raw:
         workdir = Path(tmpdir_raw)

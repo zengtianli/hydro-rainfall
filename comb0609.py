@@ -2,6 +2,8 @@ import re
 import logging
 import argparse
 import pandas as pd
+
+from partition_map import column_for_stem
 from pathlib import Path
 from datetime import datetime, timedelta
 # 配置和日志
@@ -129,20 +131,23 @@ class Processor:
             if not file.name.endswith('.csv'):
                 continue
             lines = self.read_file(file, as_text=True)
-            # 概湖数据
-            if len(lines) >= 5:
+            # 概湖数据：按行首的字段名取，不按行号
+            lake_names, lake_areas = [], []
+            for line in lines:
+                cells = [cell.strip() for cell in line.strip().split(',')]
+                if '包含概湖的名称' in cells[0]:
+                    lake_names = [cell for cell in cells[1:] if cell]
+                elif '包含概湖对应的面积' in cells[0]:
+                    lake_areas = [cell for cell in cells[1:] if cell]
+            if len(lake_names) != len(lake_areas):
+                self.logger.warning(
+                    f"{file.name}: 概湖名称 {len(lake_names)} 个、面积 {len(lake_areas)} 个，数量不一致，只取前 {min(len(lake_names), len(lake_areas))} 个配对"
+                )
+            for name, area_str in zip(lake_names, lake_areas):
                 try:
-                    lake_names = [name.strip() for name in lines[3].strip().split(',')[1:] if name.strip()]
-                    area_parts = lines[4].strip().split(',')
-                    for i, area_str in enumerate(area_parts[1:]):
-                        if i < len(lake_names):
-                            try:
-                                area = float(area_str.strip())
-                                gaihu_data.append({'概湖名称': lake_names[i], '面积(km2)': area})
-                            except:
-                                pass
-                except:
-                    pass
+                    gaihu_data.append({'概湖名称': name, '面积(km2)': float(area_str)})
+                except ValueError:
+                    self.logger.warning(f"{file.name}: 概湖 {name} 的面积 {area_str!r} 不是数字，跳过")
             # 分区数据
             for line in lines:
                 if '分区' in line and '总面积' in line:
@@ -188,13 +193,21 @@ class Processor:
         processed = set()
         files_created = 0
         for lake_name, partition_name in lake_info:
-            if lake_name in processed or partition_name not in df_hourly.columns:
+            if lake_name in processed:
                 continue
+            # partition_name is the file stem ("01_NSPYQ(南沙)"); the rainfall table is keyed by the
+            # Chinese partition name ("南沙平原区"). partition_map joins the two and raises on a miss.
+            rain_column = column_for_stem(partition_name)
+            if rain_column not in df_hourly.columns:
+                raise KeyError(
+                    f"分区 {partition_name!r} 对应的列 {rain_column!r} 不在 input_FQNNGXL.txt 里"
+                    f"（现有列：{[c for c in df_hourly.columns if c != '日期']}）"
+                )
             area_km2 = fenqu_df.loc[fenqu_df['分区名称'] == partition_name, '面积(km2)'].iloc[0]
             area_m2 = area_km2 * 1_000_000
             lake_df = pd.DataFrame({
                 '日期': df_hourly['日期'],
-                lake_name: df_hourly[partition_name] * 10000 / area_m2 * 1000
+                lake_name: df_hourly[rain_column] * 10000 / area_m2 * 1000
             })
             output_file = self.config.dirs['ggxs'] / f'{lake_name}_ggxs.csv'
             header = f"# 概湖编号: {lake_name}\n# 所属分区: {partition_name}\n# 分区面积(km2): {area_km2:.4f}\n# 注意：以下数据单位为毫米(mm)\n"
@@ -203,32 +216,11 @@ class Processor:
             processed.add(lake_name)
             files_created += 1
         
-        # 确保为所有湖泊创建文件，即使数据都是0
+        # Nothing computed means the inputs do not line up. Writing zeros here would look like a result.
         if files_created == 0:
-            self.logger.warning("所有输入数据为0，为所有湖泊创建默认ggxs文件")
-            # 为所有湖泊创建文件
-            for lake_name, partition_name in lake_info:
-                if lake_name in processed:
-                    continue
-                # 查找对应分区的面积
-                matching_areas = fenqu_df.loc[fenqu_df['分区名称'] == partition_name, '面积(km2)']
-                if len(matching_areas) == 0:
-                    self.logger.warning(f"未找到分区 {partition_name} 的面积信息，跳过湖泊 {lake_name}")
-                    continue
-                area_km2 = matching_areas.iloc[0]
-                
-                lake_df = pd.DataFrame({
-                    '日期': df_hourly['日期'],
-                    lake_name: 0.0  # 全部设为0
-                })
-                output_file = self.config.dirs['ggxs'] / f'{lake_name}_ggxs.csv'
-                header = f"# 概湖编号: {lake_name}\n# 所属分区: {partition_name}\n# 分区面积(km2): {area_km2:.4f}\n# 注意：以下数据单位为毫米(mm)\n"
-                self.write_file(header, output_file)
-                self.write_file(lake_df, output_file, mode='a', index=False)
-                processed.add(lake_name)
-                files_created += 1
-            
-            self.logger.info(f"创建了 {files_created} 个默认ggxs文件")
+            raise RuntimeError(
+                "降雨系数一步没有算出任何概湖：static_PYLYSCS.txt 的分区与 input_FQNNGXL.txt 的列对不上"
+            )
     def intake_process(self):
         """取水处理"""
         self.logger.info("开始处理取水数据")
@@ -269,7 +261,11 @@ class Processor:
                 intake_df = pd.DataFrame({'日期': intake['日期'], 'intake_total': intake.iloc[:, -1].fillna(0)})
             except:
                 intake_df = pd.DataFrame({'日期': ggxs['日期'], 'intake_total': 0})
-            result = pd.merge(ggxs[['日期', 'ggxs_sum']], intake_df, on='日期', how='left').fillna(0)
+            # The two steps write the hour differently ("2025-05-14 00:00:00" and "2025/05/14 00:00"),
+            # so join on the parsed time, not on the text.
+            ggxs['_hour'] = pd.to_datetime(ggxs['日期'])
+            intake_df = pd.DataFrame({'_hour': pd.to_datetime(intake_df['日期']), 'intake_total': intake_df['intake_total']})
+            result = pd.merge(ggxs[['日期', 'ggxs_sum', '_hour']], intake_df, on='_hour', how='left').drop(columns='_hour').fillna(0)
             result['total_demand'] = result['ggxs_sum'] + result['intake_total']
             self.write_file(result, self.config.dirs['deduct'] / f'{prefix}_deduct.csv', index=False)
     def merge_final_process(self):

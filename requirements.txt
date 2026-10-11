@@ -1,2 +1,5 @@
 pandas>=2.2
-openpyxl>=3.0.0
+# only for the HTTP API (api.py)
+fastapi>=0.115.0
+uvicorn>=0.32.0
+python-multipart>=0.0.26
